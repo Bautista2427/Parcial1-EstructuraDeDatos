@@ -19,23 +19,34 @@ public class Main {
         intentar("Prioridad fuera de rango", () -> new Paquete("PQ004", "Armenia", 1, 11, 5));
         intentar("Repartidor duplicado", () -> centro.registrarRepartidor(new Repartidor("R01", "Otro", "Armenia", true)));
 
-        titulo("2. CONSULTA POR CÓDIGO (HashMap)");
+        titulo("1.1 REGISTRO Y CONSULTA DE REPARTIDORES");
+        centro.registrarRepartidor(new Repartidor("R10", "Valentina Cruz", "Armenia", true));
+        System.out.println("Repartidores registrados: " + centro.getRepartidores().size());
+        System.out.println("Consulta R10 -> " + centro.consultarRepartidor("R10").orElse(null));
+        System.out.println("Consulta R99 -> "
+                + centro.consultarRepartidor("R99").map(Repartidor::toString).orElse("no existe"));
+        System.out.println("Listado completo:");
+        for (Repartidor r : centro.getRepartidores()) {
+            System.out.println("  " + r);
+        }
+
+        titulo("2. CONSULTA POR CÓDIGO");
         System.out.println("¿Existe PQ731? " + centro.existe("PQ731"));
         System.out.println("PQ731 -> " + centro.consultar("PQ731").orElse(null));
         System.out.println("¿Existe PQ000? " + centro.existe("PQ000"));
 
-        titulo("3. MUNICIPIOS (Set) Y ORDENADOS (TreeSet)");
+        titulo("3. MUNICIPIOS Y ORDENADOS");
         System.out.println("Sin repetir: " + centro.getMunicipios());
         System.out.println("Ordenados:   " + centro.getMunicipiosOrdenados());
 
-        titulo("4. PAQUETES POR MUNICIPIO (Map)");
+        titulo("4. PAQUETES POR MUNICIPIO");
         for (String m : centro.getMunicipiosOrdenados()) {
             StringBuilder sb = new StringBuilder();
             for (Paquete p : centro.getPaquetesPorMunicipio(m)) sb.append(p.getCodigo()).append(' ');
             System.out.println(m + " -> " + sb.toString().trim());
         }
 
-        titulo("5. ORDEN NATURAL (Comparable) Y COMPARATORS");
+        titulo("5. ORDEN NATURAL Y COMPARATORS");
         imprimirCodigos("Natural (código)      ", centro.ordenados(null));
         imprimirCodigos("Prioridad desc        ", centro.ordenados(ComparadoresPaquete.POR_PRIORIDAD_DESC));
         imprimirCodigos("Peso desc             ", centro.ordenados(ComparadoresPaquete.POR_PESO_DESC));
@@ -47,7 +58,7 @@ public class Main {
         System.out.printf("Peso total Armenia: %.1f kg%n", AnalisisPaquetes.pesoTotalPorDestino(reg, "Armenia"));
         System.out.printf("Peso total Salento: %.1f kg%n", AnalisisPaquetes.pesoTotalPorDestino(reg, "Salento"));
         System.out.println("Paquetes con prioridad >= 4: " + AnalisisPaquetes.contarPrioridadMinima(reg, 4));
-        // Ejemplos del enunciado
+
         List<Paquete> ej = new ArrayList<>();
         ej.add(new Paquete("PQ101", "Armenia", 4.5, 5, 10));
         ej.add(new Paquete("PQ203", "Salento", 3.0, 5, 10));
@@ -68,17 +79,17 @@ public class Main {
         titulo("8. DIVIDE Y VENCERÁS: PAQUETE MÁS PESADO");
         System.out.println("Más pesado: " + AnalisisPaquetes.masPesado(reg));
 
-        titulo("9. DESPACHO POR ORDEN DE LLEGADA (Queue)");
+        titulo("9. DESPACHO POR ORDEN DE LLEGADA");
         for (int i = 0; i < 3; i++) {
             Paquete p = centro.despachar(CentroDistribucion.Modalidad.LLEGADA);
             System.out.println("Despachado " + p + " con " + centro.repartidorAsignado(p.getCodigo()));
         }
 
-        System.out.println("-- Entregas (orden de entrega distinto al de despacho, igual al ejemplo del enunciado) --");
+        System.out.println("-- Entregas --");
         for (String cod : new String[]{"PQ105", "PQ942", "PQ731"}) centro.registrarEntrega(cod);
         System.out.println("Historial parcial: " + centro.getHistorial());
 
-        titulo("10. DESPACHO PRIORITARIO (PriorityQueue: prioridad desc, tiempo asc, código)");
+        titulo("10. DESPACHO PRIORITARIO ");
         for (int i = 0; i < 3; i++) {
             Paquete p = centro.despachar(CentroDistribucion.Modalidad.PRIORIDAD);
             System.out.println("Despachado " + p + " con " + centro.repartidorAsignado(p.getCodigo()));
@@ -97,10 +108,10 @@ public class Main {
         final Repartidor rz = otraZona;
         intentar("Asignar a zona distinta", () -> centro.asignar(sig, rz));
 
-        titulo("12. HISTORIAL DE ENTREGAS (lista simplemente enlazada propia)");
+        titulo("12. HISTORIAL DE ENTREGAS ");
         System.out.println("¿Historial vacío? " + centro.getHistorial().estaVacia());
         String[] enRuta = enRuta(centro, reg);
-        // Se entregan en un orden distinto al despacho para comprobar que se conserva el orden de entrega
+
         for (int i = enRuta.length - 1; i >= 0; i--) centro.registrarEntrega(enRuta[i]);
         System.out.println("Historial: " + centro.getHistorial());
         System.out.println("Cantidad: " + centro.getHistorial().tamano());
@@ -115,7 +126,7 @@ public class Main {
         probarLista();
     }
 
-    // ---------- Datos ----------
+
 
     private static void cargarDatos(CentroDistribucion c) {
         Object[][] d = {
@@ -140,13 +151,13 @@ public class Main {
                 {"R07","Diego Mejía","Circasia"},   {"R08","Paula Ospina","Filandia"}
         };
         for (String[] f : r) c.registrarRepartidor(new Repartidor(f[0], f[1], f[2], true));
-        // Un repartidor no disponible para demostrar la regla
+
         c.registrarRepartidor(new Repartidor("R09", "Camilo Ríos", "Salento", false));
     }
 
-    // ---------- Utilidades de demostración ----------
 
-    /** Códigos de los paquetes actualmente en ruta (asignados y sin entregar). */
+
+
     private static String[] enRuta(CentroDistribucion c, List<Paquete> reg) {
         List<String> l = new ArrayList<>();
         for (Paquete p : reg) if (c.repartidorAsignado(p.getCodigo()) != null) l.add(p.getCodigo());
@@ -165,10 +176,10 @@ public class Main {
         System.out.println("Eliminar primero (1): " + l.eliminar(1) + " -> " + l);
         System.out.println("Eliminar intermedio (3): " + l.eliminar(3) + " -> " + l);
         System.out.println("Eliminar último (4): " + l.eliminar(4) + " -> " + l);
-        l.agregar(99); // verifica que la cola quedó consistente
+        l.agregar(99);
         System.out.println("Agregar tras eliminar último: " + l);
         System.out.println("Eliminar inexistente (77): " + l.eliminar(77) + " -> " + l);
-        ListaSimple<String> ls = new ListaSimple<>(); // reutilizable con otro tipo
+        ListaSimple<String> ls = new ListaSimple<>();
         ls.agregar("a"); ls.agregar("b");
         System.out.println("Genérica con String: " + ls + " tamaño " + ls.tamano());
     }
